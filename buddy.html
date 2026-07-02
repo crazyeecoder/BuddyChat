@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BuddyChat — MINED</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+:root {
+  --ivory:       #F8F5F0;
+  --parchment:   #F1ECE5;
+  --sage:        #AAB39D;
+  --moss:        #5F6F52;
+  --forest:      #32402F;
+  --gold:        #D8C7A1;
+  --sand:        #E8DCC8;
+  --charcoal:    #2F2F2F;
+  --text-strong: #2F2F2F;
+  --text-soft:   #6f6a62;
+  --text-faint:  #9b958c;
+  --border:      rgba(47,47,47,0.09);
+  --surface:     #ffffff;
+  --font-display:'Cormorant Garamond', Georgia, serif;
+  --font-body:   'Inter', -apple-system, sans-serif;
+  --r-md: 18px; --r-sm: 12px;
+  --ease: cubic-bezier(.22,.61,.36,1);
+  --tf: 0.18s var(--ease);
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;transition-duration:0.01ms!important}}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;-webkit-text-size-adjust:100%}
+
+body {
+  font-family: var(--font-body);
+  background: var(--forest);
+  color: var(--text-strong);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── Top bar ─────────────────────────────────────────────────── */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  height: 56px;
+  background: var(--forest);
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(216,199,161,0.12);
+  position: relative;
+}
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  transition: opacity var(--tf);
+  opacity: 0.72;
+}
+.topbar-left:hover { opacity: 1; }
+.chevron {
+  font-size: 18px;
+  line-height: 1;
+  color: var(--sage);
+  margin-right: 1px;
+}
+.wordmark {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--gold);
+}
+.topbar-centre {
+  position: absolute;
+  left: 50%; transform: translateX(-50%);
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--gold);
+  pointer-events: none;
+}
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.nav-btn {
+  padding: 7px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(216,199,161,0.18);
+  background: transparent;
+  color: var(--sage);
+  font-size: 12.5px;
+  font-weight: 500;
+  font-family: var(--font-body);
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: background var(--tf), color var(--tf), border-color var(--tf);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+.nav-btn:hover {
+  background: rgba(216,199,161,0.10);
+  color: var(--gold);
+  border-color: rgba(216,199,161,0.32);
+}
+
+/* ── Status strip ────────────────────────────────────────────── */
+.status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 7px;
+  font-size: 11.5px;
+  color: var(--text-faint);
+  background: var(--parchment);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+}
+.status-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--moss);
+  animation: pulse 2.6s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,100%{opacity:1} 50%{opacity:0.35}
+}
+
+/* ── Page body ───────────────────────────────────────────────── */
+.page-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #eae4d8;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── Botanical background layers ─────────────────────────────── */
+.bg-scene {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.bg-scene::before {
+  content: '';
+  position: absolute;
+  top: -80px; left: -80px;
+  width: 520px; height: 520px;
+  background: radial-gradient(circle, rgba(225,215,180,0.6) 0%, transparent 68%);
+  border-radius: 50%;
+}
+.bg-scene::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 180px;
+  background: linear-gradient(to top, rgba(180,190,170,0.18), transparent);
+}
+.botanical-left {
+  position: absolute;
+  left: -24px; bottom: 48px;
+  width: 240px;
+  opacity: 0.22;
+}
+.botanical-right {
+  position: absolute;
+  right: -16px; top: 60px;
+  width: 190px;
+  opacity: 0.17;
+  transform: scaleX(-1);
+}
+.birds-svg {
+  position: absolute;
+  top: 72px; left: 72px;
+  opacity: 0.22;
+  animation: birdsFloat 20s ease-in-out infinite alternate;
+}
+@keyframes birdsFloat {
+  0%   { transform: translate(0,0) scale(1); }
+  100% { transform: translate(28px,-12px) scale(1.04); }
+}
+.leaf {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0;
+  animation: leafFloat linear infinite;
+}
+@keyframes leafFloat {
+  0%   { opacity:0;    transform: translateY(20px)  rotate(0deg)   scale(0.75); }
+  8%   { opacity:0.45; }
+  88%  { opacity:0.3; }
+  100% { opacity:0;    transform: translateY(-500px) rotate(200deg) scale(1.05); }
+}
+.sparkle {
+  position: absolute;
+  width: 3px; height: 3px;
+  border-radius: 50%;
+  background: rgba(195,183,145,0.8);
+  animation: sparklePulse ease-in-out infinite alternate;
+}
+@keyframes sparklePulse {
+  0%   { opacity:0.1; transform:scale(0.8); }
+  100% { opacity:0.85; transform:scale(1.5); }
+}
+.buddy-char {
+  position: absolute;
+  bottom: 72px; right: 28px;
+  width: 100px;
+  pointer-events: none;
+  z-index: 1;
+  animation: charBob 4.2s ease-in-out infinite;
+}
+@keyframes charBob {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+.listen-bubble {
+  position: absolute;
+  bottom: 170px; right: 38px;
+  background: rgba(255,255,255,0.78);
+  border: 1px solid rgba(95,111,82,0.13);
+  border-radius: 13px 13px 3px 13px;
+  padding: 9px 13px;
+  font-family: var(--font-display);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--moss);
+  pointer-events: none;
+  z-index: 2;
+  backdrop-filter: blur(6px);
+  text-align: center;
+  white-space: nowrap;
+  opacity: 0;
+  animation: listenFade 7s ease-in-out 3s infinite;
+}
+@keyframes listenFade {
+  0%,100% { opacity:0; transform:translateY(5px); }
+  12%,82% { opacity:1; transform:translateY(0); }
+}
+
+/* ── Chat window ─────────────────────────────────────────────── */
+.chat-window {
+  flex: 1;
+  overflow-y: auto;
+  padding: 32px 0 20px;
+  position: relative;
+  z-index: 2;
+}
+.chat-window::-webkit-scrollbar { width: 4px; }
+.chat-window::-webkit-scrollbar-thumb { background: var(--sand); border-radius: 4px; }
+
+.chat-inner {
+  max-width: 660px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Message rows — grouped spacing ─────────────────────────── */
+/* Default gap between turns */
+.message-row { margin-top: 16px; }
+/* Tighter gap when same sender follows same sender */
+.message-row.buddy + .message-row.buddy,
+.message-row.user  + .message-row.user  { margin-top: 4px; }
+/* First message, no top margin */
+.chat-inner > .message-row:first-child { margin-top: 0; }
+
+.message-row {
+  display: flex;
+  flex-direction: column;
+  animation: msgIn 0.22s var(--ease) both;
+}
+.message-row.user { align-items: flex-end; }
+.message-row.buddy { align-items: flex-start; }
+
+@keyframes msgIn {
+  from { opacity:0; transform:translateY(6px); }
+  to   { opacity:1; transform:none; }
+}
+
+/* ── Bubbles ─────────────────────────────────────────────────── */
+.message {
+  max-width: 70%;
+  width: fit-content;
+  padding: 13px 18px;
+  border-radius: var(--r-md);
+  line-height: 1.75;
+}
+
+/* Buddy — Cormorant Garamond, warm parchment bg, sage left accent */
+.message.buddy {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 400;
+  color: var(--charcoal);
+  background: rgba(252,249,244,0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(95,111,82,0.12);
+  border-left: 3px solid var(--sage);
+  border-bottom-left-radius: 4px;
+  box-shadow: 0 2px 12px rgba(47,47,47,0.06);
+}
+
+/* User — Inter, forest bg */
+.message.user {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--ivory);
+  background: var(--forest);
+  border-bottom-right-radius: 4px;
+  line-height: 1.65;
+}
+
+/* Loading */
+.message.loading {
+  background: var(--ivory);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--sage);
+  border-bottom-left-radius: 4px;
+  padding: 14px 18px;
+}
+
+/* Timestamp */
+.msg-meta {
+  font-size: 10.5px;
+  color: var(--text-faint);
+  margin-top: 4px;
+  padding: 0 5px;
+  letter-spacing: 0.02em;
+}
+.message-row.user .msg-meta { text-align: right; }
+
+/* Hide timestamp when same-sender chain (only show on last) */
+.message-row.buddy + .message-row.buddy > .msg-meta,
+.message-row.user  + .message-row.user  > .msg-meta {
+  display: none;
+}
+
+/* Typing dots */
+.dots { display:flex; gap:5px; align-items:center; height:20px; }
+.dots span {
+  width:5px; height:5px; border-radius:50%;
+  background: var(--sage);
+  animation: bounce 1.2s ease-in-out infinite;
+}
+.dots span:nth-child(2){animation-delay:.18s}
+.dots span:nth-child(3){animation-delay:.36s}
+@keyframes bounce {
+  0%,80%,100%{transform:translateY(0); opacity:0.6}
+  40%{transform:translateY(-5px); opacity:1}
+}
+
+/* ── Banners ─────────────────────────────────────────────────── */
+.crisis-banner, .capsule-banner {
+  border-radius: var(--r-sm);
+  padding: 14px 18px;
+  font-size: 13.5px;
+  line-height: 1.7;
+  margin-top: 12px;
+}
+.crisis-banner {
+  background: #fdf6f5;
+  border: 1px solid rgba(180,80,60,0.2);
+  color: #7a3828;
+}
+.crisis-banner strong { color: #5a2518; }
+.capsule-banner {
+  background: var(--ivory);
+  border: 1px solid rgba(95,111,82,0.2);
+  color: var(--moss);
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 15.5px;
+}
+.capsule-banner strong { font-style:normal; color:var(--forest); font-family: var(--font-body); font-size:13px; }
+
+/* ── Intro ───────────────────────────────────────────────────── */
+.intro-card {
+  text-align: center;
+  padding: 52px 24px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.intro-title {
+  font-family: var(--font-display);
+  font-size: 38px;
+  font-weight: 500;
+  color: var(--forest);
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+.intro-body {
+  font-size: 14px;
+  color: var(--text-soft);
+  line-height: 1.8;
+  max-width: 34ch;
+}
+/* Thin decorative rule under intro title */
+.intro-rule {
+  width: 40px;
+  height: 1px;
+  background: var(--sage);
+  opacity: 0.6;
+  margin: 2px auto 0;
+}
+
+/* ── Input area ──────────────────────────────────────────────── */
+.input-area {
+  background: rgba(248,245,240,0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(95,111,82,0.1);
+  padding: 16px 24px 20px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 3;
+}
+.input-inner {
+  max-width: 660px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.input-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  background: var(--parchment);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 10px 10px 10px 18px;
+  transition: border-color var(--tf), box-shadow var(--tf);
+}
+.input-row:focus-within {
+  border-color: var(--moss);
+  box-shadow: 0 0 0 3px rgba(95,111,82,0.09);
+}
+textarea {
+  flex: 1;
+  background: transparent;
+  border: none; outline: none; resize: none;
+  font-family: var(--font-body);
+  font-size: 14.5px;
+  color: var(--text-strong);
+  line-height: 1.6;
+  height: 44px;
+  max-height: 120px;
+  padding: 3px 0;
+}
+textarea::placeholder { color: var(--text-faint); }
+
+.btn-send {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: var(--forest);
+  color: var(--ivory);
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: background var(--tf), transform var(--tf);
+}
+.btn-send:hover  { background: var(--moss); transform: scale(1.07); }
+.btn-send:disabled { background: var(--sand); cursor: not-allowed; transform: none; }
+.btn-send::after {
+  content: '';
+  display: block;
+  width: 0; height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 9px solid currentColor;
+  margin-left: 2px;
+}
+.input-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.input-hint { font-size: 11.5px; color: var(--text-faint); }
+.btn-clear {
+  font-size: 12px; color: var(--text-faint);
+  background: none; border: none;
+  font-family: var(--font-body); cursor: pointer; padding: 0;
+  transition: color var(--tf);
+}
+.btn-clear:hover { color: var(--moss); }
+
+/* ── Mobile ──────────────────────────────────────────────────── */
+@media(max-width:600px){
+  .topbar { padding: 0 18px; }
+  .nav-btn span { display: none; }
+  .nav-btn { padding: 7px 12px; }
+  .chat-inner { padding: 0 14px; }
+  .input-area { padding: 12px 14px 16px; }
+  .message { max-width: 88%; }
+  .intro-title { font-size: 30px; }
+}
+  </style>
+</head>
+<body>
+
+<nav class="topbar">
+  <a href="index.html" class="topbar-left">
+    <span class="chevron">‹</span>
+    <span class="wordmark">MINED</span>
+  </a>
+  <span class="topbar-centre">BuddyChat</span>
+  <div class="topbar-right">
+    <a href="journal.html" class="nav-btn"><span>Journal</span></a>
+    <a href="profile.html" class="nav-btn"><span>Profile</span></a>
+  </div>
+</nav>
+
+<div class="status-bar">
+  <div class="status-dot"></div>
+  Here for you
+</div>
+
+<div class="page-body">
+
+  <!-- ── Botanical background scene ───────────────────────── -->
+  <div class="bg-scene">
+
+    <!-- Left botanical branch -->
+    <svg class="botanical-left" viewBox="0 0 200 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M80 400 Q75 320 90 260 Q105 200 85 140 Q70 90 95 40" stroke="#5F6F52" stroke-width="2" fill="none"/>
+      <ellipse cx="110" cy="180" rx="38" ry="18" fill="#7a8f6a" opacity="0.6" transform="rotate(-30 110 180)"/>
+      <ellipse cx="65" cy="220" rx="32" ry="15" fill="#8a9f7a" opacity="0.5" transform="rotate(20 65 220)"/>
+      <ellipse cx="120" cy="130" rx="28" ry="12" fill="#6f8260" opacity="0.55" transform="rotate(-45 120 130)"/>
+      <ellipse cx="55" cy="290" rx="35" ry="14" fill="#7a8f6a" opacity="0.45" transform="rotate(15 55 290)"/>
+      <ellipse cx="105" cy="80" rx="22" ry="10" fill="#8a9f7a" opacity="0.5" transform="rotate(-20 105 80)"/>
+      <ellipse cx="70" cy="155" rx="30" ry="13" fill="#6f8260" opacity="0.4" transform="rotate(35 70 155)"/>
+      <path d="M90 260 Q130 240 155 210" stroke="#5F6F52" stroke-width="1.5" fill="none" opacity="0.6"/>
+      <path d="M85 180 Q50 160 30 130" stroke="#5F6F52" stroke-width="1.5" fill="none" opacity="0.5"/>
+    </svg>
+
+    <!-- Right botanical branch -->
+    <svg class="botanical-right" viewBox="0 0 200 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M80 0 Q75 80 90 140 Q105 200 85 260 Q70 310 95 360" stroke="#5F6F52" stroke-width="2" fill="none"/>
+      <ellipse cx="115" cy="220" rx="36" ry="16" fill="#7a8f6a" opacity="0.55" transform="rotate(25 115 220)"/>
+      <ellipse cx="60" cy="170" rx="30" ry="13" fill="#8a9f7a" opacity="0.5" transform="rotate(-20 60 170)"/>
+      <ellipse cx="120" cy="280" rx="26" ry="11" fill="#6f8260" opacity="0.5" transform="rotate(40 120 280)"/>
+      <ellipse cx="50" cy="100" rx="33" ry="14" fill="#7a8f6a" opacity="0.45" transform="rotate(-15 50 100)"/>
+    </svg>
+
+    <!-- Birds -->
+    <svg class="birds-svg" width="120" height="40" viewBox="0 0 120 40" fill="none">
+      <path d="M10 20 Q20 12 30 20" stroke="#5F6F52" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+      <path d="M45 14 Q55 6 65 14" stroke="#5F6F52" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <path d="M80 22 Q88 16 96 22" stroke="#5F6F52" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+    </svg>
+
+    <!-- Misty hills -->
+    <svg style="position:absolute;bottom:0;left:0;right:0;width:100%;opacity:0.15" viewBox="0 0 1200 200" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="300" cy="200" rx="400" ry="120" fill="#7a8f6a"/>
+      <ellipse cx="900" cy="200" rx="500" ry="100" fill="#6f8260"/>
+      <ellipse cx="600" cy="200" rx="350" ry="80" fill="#8a9f7a"/>
+    </svg>
+
+    <!-- Floating leaves -->
+    <svg class="leaf" style="left:8%;bottom:-30px;animation-duration:14s;animation-delay:0s;" width="18" height="22" viewBox="0 0 18 22">
+      <path d="M9 2 Q16 8 14 16 Q9 22 4 16 Q2 8 9 2Z" fill="#7a8f6a" opacity="0.7"/>
+    </svg>
+    <svg class="leaf" style="left:18%;bottom:-30px;animation-duration:18s;animation-delay:3s;" width="14" height="18" viewBox="0 0 14 18">
+      <path d="M7 1 Q13 6 11 13 Q7 18 3 13 Q1 6 7 1Z" fill="#AAB39D" opacity="0.6"/>
+    </svg>
+    <svg class="leaf" style="left:72%;bottom:-30px;animation-duration:16s;animation-delay:6s;" width="16" height="20" viewBox="0 0 16 20">
+      <path d="M8 1 Q15 7 12 15 Q8 20 4 15 Q1 7 8 1Z" fill="#8a9f7a" opacity="0.65"/>
+    </svg>
+    <svg class="leaf" style="left:85%;bottom:-30px;animation-duration:20s;animation-delay:1s;" width="12" height="16" viewBox="0 0 12 16">
+      <path d="M6 1 Q11 5 9 11 Q6 16 3 11 Q1 5 6 1Z" fill="#6f8260" opacity="0.55"/>
+    </svg>
+    <svg class="leaf" style="left:55%;bottom:-30px;animation-duration:15s;animation-delay:9s;" width="15" height="19" viewBox="0 0 15 19">
+      <path d="M7.5 1 Q14 6 11 14 Q7.5 19 4 14 Q1 6 7.5 1Z" fill="#AAB39D" opacity="0.6"/>
+    </svg>
+
+    <!-- Sparkles -->
+    <div class="sparkle" style="left:22%;top:30%;animation-duration:2.1s;animation-delay:0s;"></div>
+    <div class="sparkle" style="left:78%;top:18%;animation-duration:3.2s;animation-delay:0.8s;"></div>
+    <div class="sparkle" style="left:40%;top:55%;animation-duration:2.7s;animation-delay:1.5s;"></div>
+    <div class="sparkle" style="left:62%;top:40%;animation-duration:1.9s;animation-delay:0.4s;"></div>
+    <div class="sparkle" style="left:15%;top:62%;animation-duration:2.5s;animation-delay:2s;"></div>
+  </div>
+
+  <!-- Buddy character + listening bubble -->
+  <div class="listen-bubble">I'm listening.<br>Take your time.</div>
+  <svg class="buddy-char" viewBox="0 0 100 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- body -->
+    <ellipse cx="50" cy="78" rx="34" ry="36" fill="#8a9f6a"/>
+    <ellipse cx="50" cy="78" rx="30" ry="32" fill="#9aaf7a"/>
+    <!-- glow in chest -->
+    <ellipse cx="50" cy="88" rx="14" ry="10" fill="rgba(220,210,150,0.5)"/>
+    <ellipse cx="50" cy="88" rx="8" ry="6" fill="rgba(240,230,170,0.6)"/>
+    <!-- eyes closed, peaceful -->
+    <path d="M38 68 Q41 65 44 68" stroke="#3d4f2f" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+    <path d="M56 68 Q59 65 62 68" stroke="#3d4f2f" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+    <!-- tiny smile -->
+    <path d="M44 76 Q50 80 56 76" stroke="#3d4f2f" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <!-- sprout on top -->
+    <path d="M50 44 Q50 36 50 30" stroke="#5F6F52" stroke-width="2" stroke-linecap="round"/>
+    <ellipse cx="43" cy="28" rx="10" ry="6" fill="#7a9060" transform="rotate(-20 43 28)"/>
+    <ellipse cx="57" cy="26" rx="9" ry="5" fill="#8a9f6a" transform="rotate(15 57 26)"/>
+    <!-- feet -->
+    <ellipse cx="36" cy="112" rx="10" ry="5" fill="#7a9060"/>
+    <ellipse cx="64" cy="112" rx="10" ry="5" fill="#7a9060"/>
+    <!-- arms -->
+    <path d="M18 75 Q24 68 32 72" stroke="#8a9f6a" stroke-width="8" stroke-linecap="round" fill="none"/>
+    <path d="M82 75 Q76 68 68 72" stroke="#8a9f6a" stroke-width="8" stroke-linecap="round" fill="none"/>
+  </svg>
+
+  <div class="chat-window" id="chatWindow">
+    <div class="chat-inner" id="chatInner"></div>
+  </div>
+
+  <div class="input-area">
+    <div class="input-inner">
+      <div class="input-row">
+        <textarea
+          id="userInput"
+          placeholder="What's on your mind?"
+          rows="1"
+          aria-label="Message"
+        ></textarea>
+        <button class="btn-send" id="sendBtn" aria-label="Send message"></button>
+      </div>
+      <div class="input-footer">
+        <span class="input-hint">Enter to send · Shift+Enter for new line</span>
+        <button class="btn-clear" id="clearBtn">Clear chat</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const BACKEND_URL        = "http://localhost:8000/api/v1/chat/";
+  const USER_ID            = "00000000-0000-0000-0000-000000000001";
+  const DUPLICATE_WINDOW_MS = 3000;
+
+  let history      = [];
+  let sessionId    = null;
+  let isSending    = false;
+  let lastSentText = null;
+  let lastSentAt   = 0;
+
+  const saved = localStorage.getItem("buddychat_history");
+  if (saved) { try { history = JSON.parse(saved); } catch { history = []; } }
+
+  function timeLabel() {
+    return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function chatInner() { return document.getElementById("chatInner"); }
+
+  function appendMessage(text, type) {
+    const inner = chatInner();
+    const intro = inner.querySelector('.intro-card');
+    if (intro) intro.remove();
+
+    const row = document.createElement("div");
+    row.className = `message-row ${type === 'user' ? 'user' : 'buddy'}`;
+
+    const msg = document.createElement("div");
+    msg.className = `message ${type}`;
+
+    if (type === 'loading') {
+      msg.innerHTML = `<div class="dots"><span></span><span></span><span></span></div>`;
+    } else {
+      msg.textContent = text;
+    }
+
+    const meta = document.createElement("div");
+    meta.className = "msg-meta";
+    meta.textContent = timeLabel();
+
+    row.appendChild(msg);
+    if (type !== 'loading') row.appendChild(meta);
+    inner.appendChild(row);
+
+    const win = document.getElementById("chatWindow");
+    win.scrollTop = win.scrollHeight;
+    return msg;
+  }
+
+  function appendBanner(html, cls) {
+    const el = document.createElement("div");
+    el.className = cls;
+    el.innerHTML = html;
+    chatInner().appendChild(el);
+    const win = document.getElementById("chatWindow");
+    win.scrollTop = win.scrollHeight;
+  }
+
+  function showCrisisBanner(capsuleContent) {
+    if (capsuleContent) {
+      appendBanner(
+        `💌 <strong>A message from your past self:</strong><br/>"${capsuleContent}"`,
+        'capsule-banner'
+      );
+    }
+    appendBanner(
+      `💛 You don't have to go through this alone. <strong>Book a counsellor</strong> inside MINED, or reach iCall at <strong>9152987821</strong> if you need to talk to someone right now.`,
+      'crisis-banner'
+    );
+  }
+
+  function showIntro() {
+    chatInner().innerHTML = `
+      <div class="intro-card">
+        <div class="intro-title">How are you feeling?</div>
+        <div class="intro-rule"></div>
+        <p class="intro-body">A calm, private space to say what's on your mind. No judgement, no rush.</p>
+      </div>`;
+    appendMessage(
+      "Hey, I'm BuddyChat. I'm here to listen — take your time, there's no right or wrong way to start. How are you doing today?",
+      "buddy"
+    );
+  }
+
+  async function sendMessage() {
+    if (isSending) return;
+    const input = document.getElementById("userInput");
+    const text  = input.value.trim();
+    if (!text) return;
+
+    const now = Date.now();
+    if (text === lastSentText && (now - lastSentAt) < DUPLICATE_WINDOW_MS) return;
+
+    isSending = true;
+    document.getElementById("sendBtn").disabled = true;
+    appendMessage(text, "user");
+    input.value = "";
+    input.style.height = "44px";
+
+    const loadingEl = appendMessage("", "loading");
+
+    try {
+      const res = await fetch(BACKEND_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: USER_ID, session_id: sessionId, message: text, history })
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+      sessionId = data.session_id;
+      loadingEl.closest('.message-row').remove();
+      appendMessage(data.reply, "buddy");
+      if (data.crisis?.detected) showCrisisBanner(data.crisis.capsule_content);
+      history.push({ role: "user", content: text });
+      history.push({ role: "assistant", content: data.reply });
+      localStorage.setItem("buddychat_history", JSON.stringify(history));
+      lastSentText = text;
+      lastSentAt   = Date.now();
+    } catch (err) {
+      loadingEl.closest('.message-row').remove();
+      appendMessage("Couldn't reach the backend. Make sure uvicorn is running on port 8000.", "buddy");
+      console.error("[BuddyChat]", err);
+    } finally {
+      isSending = false;
+      document.getElementById("sendBtn").disabled = false;
+    }
+  }
+
+  function clearChat() {
+    history = []; sessionId = null; lastSentText = null; lastSentAt = 0;
+    localStorage.removeItem("buddychat_history");
+    chatInner().innerHTML = "";
+    showIntro();
+  }
+
+  document.getElementById("userInput").addEventListener("input", function() {
+    this.style.height = "44px";
+    this.style.height = Math.min(this.scrollHeight, 120) + "px";
+  });
+
+  document.getElementById("sendBtn").addEventListener("click", sendMessage);
+  document.getElementById("clearBtn").addEventListener("click", clearChat);
+  document.getElementById("userInput").addEventListener("keydown", e => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  });
+
+  if (history.length > 0) {
+    history.forEach(msg => {
+      if (msg.role !== "system")
+        appendMessage(msg.content, msg.role === "user" ? "user" : "buddy");
+    });
+  } else {
+    showIntro();
+  }
+</script>
+</body>
+</html>
